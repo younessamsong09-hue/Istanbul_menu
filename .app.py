@@ -1,40 +1,24 @@
 import streamlit as st
 
-# إعداد الصفحة
-st.set_page_config(page_title="Master Place - تاوريرت", page_icon="🍔")
+# الإعدادات الجديدة بالاسم الذي طلبته
+st.set_page_config(page_title="Younes Azahrai", page_icon="💬")
 
-st.title("🍔 Master Place - تاوريرت")
-st.write("أهلاً بكم! اختر وجبتك ورقم طاولتك وسنتولى الباقي.")
+st.title("💬 Younes Azahrai - دردشة وفيديو")
 
-# 🔢 اختيار رقم الطاولة
-st.subheader("🔢 اختر رقم الطاولة")
-table = st.selectbox("رقم الطاولة:", [f"طاولة {i}" for i in range(1, 11)])
+# قسم مكالمة الفيديو
+st.sidebar.header("📞 الإتصال")
+if st.sidebar.button("بدء مكالمة فيديو"):
+    st.markdown("### [اضغط هنا للدخول للمكالمة](https://meet.jit.si/YounesAzahraiFamily)")
+    st.info("سيتم فتح غرفة فيديو آمنة لعائلتك.")
 
-# 🍴 قائمة الأطباق الجديدة
-st.subheader("🍴 قائمة الأطباق")
+# نظام الدردشة
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-items = {
-    "طاكوس ميكس كبير": 45,
-    "بيتزا كواترو سيزون": 50,
-    "ساندوتش كفتة": 35,
-    "سلطة فواكه": 20,
-    "عصير برتقال طازج": 15,
-    "شاي مغربي": 10
-}
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-for name, price in items.items():
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.write(f"**{name}**")
-    with col2:
-        if st.button(f"طلب ({price} درهم)", key=name):
-            # ضع رقم واتساب المطعم هنا
-            phone = "2126XXXXXXXX" 
-            msg = f"طلب جديد من {table}: {name}"
-            st.markdown(f'<a href="https://wa.me/{phone}?text={msg}" target="_blank">✅ إرسال الطلب عبر واتساب</a>', unsafe_allow_html=True)
-
-# 📍 إضافة الخريطة
-st.markdown("---")
-st.subheader("📍 موقعنا في تاوريرت")
-st.map({"lat": [34.407], "lon": [-2.897]}) 
-
+if prompt := st.chat_input("اكتب رسالتك هنا..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
+    
