@@ -1,77 +1,40 @@
 import streamlit as st
-import time
 
-# إعدادات الصفحة الملكية
-st.set_page_config(page_title="Younes Azahrai Chat", page_icon="👑", layout="wide")
+# إعدادات الصفحة
+st.set_page_config(page_title="Younes Azahrai", page_icon="👑")
 
-# زينة قوية: تصميم CSS مخصص للألوان والتحركات
-st.markdown("""
-    <style>
-    /* تغيير خلفية التطبيق */
-    .stApp {
-        background: linear-gradient(to bottom, #1e3c72, #2a5298);
-        color: white;
-    }
-    /* تصميم العنوان الملكي */
-    .main-title {
-        font-size: 50px;
-        font-weight: bold;
-        text-align: center;
-        color: #FFD700;
-        text-shadow: 2px 2px 4px #000000;
-        margin-bottom: 0px;
-    }
-    /* تصميم الأزرار */
-    .stButton>button {
-        border-radius: 50px;
-        border: 2px solid #FFD700;
-        background-color: rgba(255, 215, 0, 0.1);
-        color: white;
-        transition: 0.3s;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #FFD700;
-        color: #1e3c72;
-        transform: scale(1.05);
-    }
-    /* زينة الرسائل */
-    .stChatMessage {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        border-left: 5px solid #FFD700;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>👑 Younes Azahrai</h1>", unsafe_allow_html=True)
 
-# الواجهة الرئيسية
-st.markdown("<h1 class='main-title'>👑 YOUNES AZAHRAI</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 20px;'>مرحباً بكم في المنصة العالمية لآل الزهراوي</p>", unsafe_allow_html=True)
+# --- قسم مكالمة الفيديو ---
+st.subheader("📞 التواصل المباشر")
+# رابط غرفة فيديو فريدة لعائلتك
+video_room_url = "https://meet.jit.si/YounesAzahraiFamily2026"
 
-# إضافة ساعة رقمية بتوقيت المغرب
-t = time.strftime("%H:%M:%S")
-st.markdown(f"<p style='text-align: center; color: #FFD700;'>🕒 توقيت تاوريرت الآن: {t}</p>", unsafe_allow_html=True)
+if st.button("🚀 ابدأ مكالمة الفيديو الآن"):
+    st.balloons()
+    # فتح الرابط في صفحة جديدة
+    st.markdown(f'<a href="{video_room_url}" target="_blank" style="text-decoration: none;"><button style="width:100%; background-color: #28a745; color: white; padding: 15px; border: none; border-radius: 10px; font-size: 18px; cursor: pointer;">👉 اضغط هنا لدخول الغرفة</button></a>', unsafe_allow_html=True)
+    st.info("سيتم فتح الكاميرا في صفحة جديدة، تأكد من إعطاء إذن الكاميرا.")
 
 st.divider()
 
-# قسم الأزرار التفاعلية
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    if st.button("🚀 انضم الآن لمكالمة الفيديو"):
-        st.balloons() # زينة احتفالية عند الضغط
-        st.markdown("### [👉 اضغط هنا للدخول لغرفة الفيديو](https://meet.jit.si/YounesAzahraiFamily)")
-        st.info("تم فتح الغرفة المؤمنة بنجاح.")
+# --- قسم الدردشة العائلية ---
+st.subheader("💬 سجل الرسائل")
 
-# منطقة الدردشة
-st.subheader("💬 سجل التواصل الاجتماعي")
+# ملاحظة لليونس: حالياً الرسائل تظهر لكل شخص بمفرده
+# لجعلها تظهر للكل، سنحتاج لخطوة بسيطة لربط Google Sheets لاحقاً
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# عرض الرسائل القديمة
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+        st.markdown(msg["content"])
 
-if prompt := st.chat_input("اكتب رسالة لليونس..."):
+# إدخال رسالة جديدة
+if prompt := st.chat_input("اكتب رسالتك هنا..."):
+    # إضافة الرسالة للذاكرة
     st.session_state.messages.append({"role": "user", "content": prompt})
+    # إعادة تحميل الصفحة لإظهار الرسالة
     st.rerun()
     
