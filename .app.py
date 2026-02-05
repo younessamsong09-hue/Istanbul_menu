@@ -1,90 +1,43 @@
-import streamlit as st
-import streamlit.components.v1 as components
+
+    import streamlit as st
+from streamlit_gsheets import GSheetsConnection
+import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="واتساب يونس", page_icon="💬", layout="centered")
+st.set_page_config(page_title="واتساب عائلة يونس", page_icon="💬")
 
-# تصميم CSS لجعل الرسائل تشبه الواتساب
-st.markdown("""
-    <style>
-    .main { background-color: #e5ddd5; }
-    .chat-bubble {
-        padding: 10px 15px;
-        border-radius: 15px;
-        margin: 5px;
-        max-width: 70%;
-        font-family: sans-serif;
-        position: relative;
-    }
-    .sent {
-        background-color: #dcf8c6;
-        align-self: flex-end;
-        margin-left: auto;
-        border-bottom-right-radius: 2px;
-    }
-    .received {
-        background-color: #ffffff;
-        align-self: flex-start;
-        margin-right: auto;
-        border-bottom-left-radius: 2px;
-    }
-    .time {
-        font-size: 0.7em;
-        color: #888;
-        text-align: right;
-        margin-top: 5px;
-    }
-    .name {
-        font-weight: bold;
-        font-size: 0.8em;
-        color: #075e54;
-        margin-bottom: 2px;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# الاتصال بجدول بيانات جوجل
+conn = st.connection("gsheets", type=GSheetsConnection)
 
 st.title("👑 واتساب عائلة يونس")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# قراءة الرسائل من الجدول
+df = conn.read(ttl="1s") # تحديث كل ثانية لجعلها سريعة
 
-# عرض الرسائل بستايل الواتساب
-chat_container = st.container()
-with chat_container:
-    for msg in st.session_state.messages:
-        # إذا كان يونس هو المرسل نختار sent وإلا received
-        style = "sent" if msg['name'] == "يونس" else "received"
-        st.markdown(f"""
-            <div class="chat-bubble {style}">
-                <div class="name">{msg['name']}</div>
-                <div>{msg['text']}</div>
-                <div class="time">{msg['time']}</div>
-            </div>
-        """, unsafe_allow_html=True)
+# عرض الرسائل بستايل جميل
+for index, row in df.iterrows():
+    style = "text-align: right; background-color: #dcf8c6;" if row['name'] == "يونس" else "text-align: left; background-color: #ffffff;"
+    st.markdown(f"""
+        <div style="padding: 10px; border-radius: 10px; margin: 5px; {style} border: 1px solid #ddd;">
+            <b>{row['name']}</b>: {row['message']}<br>
+            <small style="color: gray;">{row['time']}</small>
+        </div>
+    """, unsafe_allow_html=True)
 
-st.divider()
+# خانة الكتابة
+with st.form("chat_form"):
+    u_name = st.text_input("اسمك:", value="يونس")
+    u_msg = st.text_input("اكتب رسالة...")
+    submit = st.form_submit_button("إرسال 🚀")
 
-# منطقة الكتابة (تشبه شريط الواتساب السفلي)
-with st.container():
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        u_name = st.text_input("اسمك:", value="يونس", key="name_input")
-        u_msg = st.text_input("اكتب رسالة...", key="msg_input")
-    with col2:
-        st.write(" ")
-        if st.button("إرسال ✅"):
-            if u_name and u_msg:
-                now = datetime.now().strftime("%H:%M")
-                st.session_state.messages.append({"name": u_name, "text": u_msg, "time": now})
-                st.rerun()
-
-st.divider()
-
-# زر الفيديو
-if st.button("🎥 بدء مكالمة فيديو عائلية"):
-    st.info("انزل للأسفل واضغط على 'Join in browser'")
-    components.html(
-        f'<iframe src="https://meet.jit.si/YounesWhatsAppRoom" allow="camera; microphone; fullscreen" style="height: 450px; width: 100%; border:0;"></iframe>',
-        height=450,
-    )
-    
+    if submit and u_name and u_msg:
+        new_data = pd.DataFrame([{
+            "name": u_name,
+            "message": u_msg,
+            "time": datetime.now().strftime("%H:%M")
+        }])
+        updated_df = pd.concat([df, new_data], ignore_index=True)
+        conn.update(data=updated_df)
+        st.success("تم الإرسال!")
+        st.rerun()
+        
