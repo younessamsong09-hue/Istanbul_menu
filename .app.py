@@ -1,40 +1,35 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# إعدادات الصفحة
-st.set_page_config(page_title="Younes Azahrai", page_icon="👑")
+st.set_page_config(page_title="عائلة يونس", page_icon="👑")
 
-st.markdown("<h1 style='text-align: center;'>👑 Younes Azahrai</h1>", unsafe_allow_html=True)
+st.title("👑 تطبيق يونس العائلي")
+st.write("دردشة مباشرة ومكالمات فيديو سريعة")
 
-# --- قسم مكالمة الفيديو ---
-st.subheader("📞 التواصل المباشر")
-# رابط غرفة فيديو فريدة لعائلتك
-video_room_url = "https://meet.jit.si/YounesAzahraiFamily2026"
-
-if st.button("🚀 ابدأ مكالمة الفيديو الآن"):
-    st.balloons()
-    # فتح الرابط في صفحة جديدة
-    st.markdown(f'<a href="{video_room_url}" target="_blank" style="text-decoration: none;"><button style="width:100%; background-color: #28a745; color: white; padding: 15px; border: none; border-radius: 10px; font-size: 18px; cursor: pointer;">👉 اضغط هنا لدخول الغرفة</button></a>', unsafe_allow_html=True)
-    st.info("سيتم فتح الكاميرا في صفحة جديدة، تأكد من إعطاء إذن الكاميرا.")
-
-st.divider()
-
-# --- قسم الدردشة العائلية ---
-st.subheader("💬 سجل الرسائل")
-
-# ملاحظة لليونس: حالياً الرسائل تظهر لكل شخص بمفرده
-# لجعلها تظهر للكل، سنحتاج لخطوة بسيطة لربط Google Sheets لاحقاً
+# نظام الدردشة البسيط (في الذاكرة)
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# عرض الرسائل القديمة
+# عرض الرسائل
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+    st.chat_message("user").write(f"**{msg['name']}:** {msg['text']}")
 
 # إدخال رسالة جديدة
-if prompt := st.chat_input("اكتب رسالتك هنا..."):
-    # إضافة الرسالة للذاكرة
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    # إعادة تحميل الصفحة لإظهار الرسالة
-    st.rerun()
+with st.container():
+    name = st.text_input("اسمك:", placeholder="اكتب اسمك هنا")
+    text = st.text_input("رسالتك:", placeholder="اكتب رسالتك هنا")
+    if st.button("إرسال 🚀"):
+        if name and text:
+            st.session_state.messages.append({"name": name, "text": text})
+            st.rerun()
+
+st.divider()
+
+# زر مكالمة الفيديو
+if st.button("🎥 ابدأ مكالمة فيديو الآن"):
+    st.info("اضغط على 'Join in browser' في الأسفل للدخول فوراً")
+    components.html(
+        f'<iframe src="https://meet.jit.si/YounesFamilyRoom123" allow="camera; microphone; fullscreen; display-capture" style="height: 500px; width: 100%; border:0;"></iframe>',
+        height=500,
+    )
     
