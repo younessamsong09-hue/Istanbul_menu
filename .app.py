@@ -1,22 +1,24 @@
-
-    import streamlit as st
+import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="واتساب عائلة يونس", page_icon="💬")
+# إعداد الصفحة
+st.set_page_config(page_title="واتساب يونس", page_icon="💬")
 
-# الاتصال بجدول بيانات جوجل
-conn = st.connection("gsheets", type=GSheetsConnection)
+# الاتصال بالجدول
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df = conn.read(ttl="1s")
+except:
+    st.error("تأكد من وضع رابط الجدول في Secrets")
+    st.stop()
 
 st.title("👑 واتساب عائلة يونس")
 
-# قراءة الرسائل من الجدول
-df = conn.read(ttl="1s") # تحديث كل ثانية لجعلها سريعة
-
-# عرض الرسائل بستايل جميل
+# عرض الرسائل
 for index, row in df.iterrows():
-    style = "text-align: right; background-color: #dcf8c6;" if row['name'] == "يونس" else "text-align: left; background-color: #ffffff;"
+    style = "background-color: #dcf8c6; text-align: right;" if row['name'] == "يونس" else "background-color: #ffffff; text-align: left;"
     st.markdown(f"""
         <div style="padding: 10px; border-radius: 10px; margin: 5px; {style} border: 1px solid #ddd;">
             <b>{row['name']}</b>: {row['message']}<br>
@@ -24,20 +26,14 @@ for index, row in df.iterrows():
         </div>
     """, unsafe_allow_html=True)
 
-# خانة الكتابة
-with st.form("chat_form"):
+# نموذج الإرسال
+with st.form("chat_form", clear_on_submit=True):
     u_name = st.text_input("اسمك:", value="يونس")
     u_msg = st.text_input("اكتب رسالة...")
-    submit = st.form_submit_button("إرسال 🚀")
-
-    if submit and u_name and u_msg:
-        new_data = pd.DataFrame([{
-            "name": u_name,
-            "message": u_msg,
-            "time": datetime.now().strftime("%H:%M")
-        }])
-        updated_df = pd.concat([df, new_data], ignore_index=True)
-        conn.update(data=updated_df)
-        st.success("تم الإرسال!")
-        st.rerun()
-        
+    if st.form_submit_button("إرسال 🚀"):
+        if u_name and u_msg:
+            new_data = pd.DataFrame([{"name": u_name, "message": u_msg, "time": datetime.now().strftime("%H:%M")}])
+            updated_df = pd.concat([df, new_data], ignore_index=True)
+            conn.update(data=updated_df)
+            st.rerun()
+            
